@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-observability
+  namespace: observability-poc
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: fastapi-observability
+
+  template:
+    metadata:
+      labels:
+        app: fastapi-observability
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8000"
+
+    spec:
+      containers:
+      - name: fastapi-observability
+
+        image: devansh2208/fastapi-observability-poc:latest
+
+        ports:
+        - containerPort: 8000
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+
+          initialDelaySeconds: 10
+          periodSeconds: 15
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+
+          initialDelaySeconds: 5
+          periodSeconds: 10
